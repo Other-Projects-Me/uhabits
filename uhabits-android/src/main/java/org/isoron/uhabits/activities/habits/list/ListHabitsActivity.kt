@@ -37,6 +37,7 @@ import org.isoron.uhabits.HabitsApplication
 import org.isoron.uhabits.activities.habits.list.views.HabitCardListAdapter
 import org.isoron.uhabits.core.models.Timestamp
 import org.isoron.uhabits.core.preferences.Preferences
+import java.time.LocalDate
 import org.isoron.uhabits.core.tasks.TaskRunner
 import org.isoron.uhabits.core.ui.ThemeSwitcher.Companion.THEME_DARK
 import org.isoron.uhabits.core.utils.MidnightTimer
@@ -79,6 +80,8 @@ class ListHabitsActivity : AppCompatActivity(), Preferences.Listener {
         menu.behavior.onPreferencesChanged()
     }
 
+    private lateinit var weeklyStatsCalculator: WeeklyStatsCalculator
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -89,6 +92,8 @@ class ListHabitsActivity : AppCompatActivity(), Preferences.Listener {
             .habitsApplicationComponent(appComponent)
             .build()
         component.themeSwitcher.apply()
+        
+        weeklyStatsCalculator = WeeklyStatsCalculator(appComponent.habitList)
 
         prefs = appComponent.preferences
         prefs.addListener(this)
@@ -118,6 +123,7 @@ class ListHabitsActivity : AppCompatActivity(), Preferences.Listener {
         screen.onAttached()
         rootView.postInvalidate()
         midnightTimer.onResume()
+        updateDailyPercentage()
 
         if (appComponent.reminderScheduler.hasHabitsWithReminders()) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
@@ -155,6 +161,12 @@ class ListHabitsActivity : AppCompatActivity(), Preferences.Listener {
 
     private fun scheduleReminders() {
         appComponent.reminderScheduler.scheduleAll()
+    }
+    
+    private fun updateDailyPercentage() {
+        val today = LocalDate.now()
+        val percentage = weeklyStatsCalculator.calculateDailyCompletionPercentage(today)
+        rootView.header.dailyPercentage = percentage
     }
 
     override fun onCreateOptionsMenu(m: Menu): Boolean {

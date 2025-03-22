@@ -48,11 +48,24 @@ class HeaderView(
     MidnightTimer.MidnightListener {
 
     private var drawer = Drawer()
-
+    private val percentagePaint = TextPaint().apply {
+        color = sres.getColor(R.attr.contrast60)
+        isAntiAlias = true
+        textSize = dim(R.dimen.smallTextSize)
+        textAlign = Paint.Align.CENTER
+        typeface = Typeface.DEFAULT_BOLD
+    }
+    
     var buttonCount: Int = 0
         set(value) {
             field = value
             requestLayout()
+        }
+        
+    var dailyPercentage: Double = 0.0
+        set(value) {
+            field = value
+            invalidate()
         }
 
     init {
@@ -112,6 +125,13 @@ class HeaderView(
         }
 
         fun draw(canvas: Canvas) {
+            // Draw percentage at top
+            val percentageText = "%.0f%%".format(dailyPercentage)
+            val percentageX = canvas.width / 2f
+            val percentageY = dim(R.dimen.smallTextSize) + dp(8f)
+            canvas.drawText(percentageText, percentageX, percentageY, percentagePaint)
+            
+            // Draw dates
             val day = DateUtils.getStartOfTodayCalendarWithOffset()
             val width = dim(R.dimen.checkmarkWidth)
             val height = dim(R.dimen.checkmarkHeight)
